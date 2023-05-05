@@ -2,7 +2,9 @@ fx_version 'adamant'
 
 game 'gta5'
 
-description 'Por FXDOPA PARA ARGRP'
+author 'fxDopa#1648'
+
+description 'OX THIEF'
 
 shared_script '@es_extended/imports.lua'
 
