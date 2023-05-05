@@ -10,9 +10,7 @@ local Keys = {
     ["NENTER"] = 201, ["N4"] = 108, ["N5"] = 60, ["N6"] = 107, ["N+"] = 96, ["N-"] = 97, ["N7"] = 117, ["N8"] = 61, ["N9"] = 118
 }
 
-ESX                           = nil
-
-TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end)
+ESX = exports['es_extended']:getSharedObject() -- NEW SHARED OBJECT
 
 --- SCRIPT PARA CACHEAR CON TECLA
 
@@ -40,18 +38,18 @@ Citizen.CreateThread(function()
                     if closestPlayerHasHandsUp or IsEntityDead(closestPlayer) then
                         openNearbyInventory(closestPlayer)
                         ExecuteCommand('me lo cachea')
-                        Citizen.Wait(50)
-                        ClearPedTasks(PlayerPedId())
-                        ClearPedSecondaryTask(player)
+                        Citizen.Wait(50)-- DONT TOUCH
+                        ClearPedTasks(PlayerPedId())-- DONT TOUCH
+                        ClearPedSecondaryTask(player)-- DONT TOUCH
                     else
                         ESX.ShowNotification('El jugador no tiene las Manos levantadas')
                     end
 
-                    Citizen.Wait(1000)
-                    TaskPlayAnim(PlayerPedId(), "mini@repair", "fixing_a_ped", 1.0, -1.0, -1, 49, 0, false, false, false)
-                    Citizen.Wait(3000)
-                    ClearPedTasks(PlayerPedId())
-                    ClearPedSecondaryTask(player)
+                    Citizen.Wait(1000) -- DONT TOUCH
+                    TaskPlayAnim(PlayerPedId(), "mini@repair", "fixing_a_ped", 1.0, -1.0, -1, 49, 0, false, false, false) -- DONT TOUCH
+                    Citizen.Wait(3000) -- DONT TOUCH 
+                    ClearPedTasks(PlayerPedId()) -- DONT TOUCH
+                    ClearPedSecondaryTask(player) -- DONT TOUCH
                     
                 else
                     ESX.ShowNotification('No hay jugadores cercanos para robar')
@@ -70,7 +68,6 @@ function openNearbyInventory(closestPlayer)
     local closestPlayer, closestDistance = ESX.Game.GetClosestPlayer()
     if closestPlayer ~= -1 and closestDistance <= 2.0 then
         exports.ox_inventory:openInventory('player', GetPlayerServerId(closestPlayer))
-        
     else
         ESX.ShowNotification('Debes estar cerca del jugador para cachearlo')
     end
