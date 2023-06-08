@@ -12,8 +12,6 @@ local Keys = {
 
 ESX = exports['es_extended']:getSharedObject() -- NEW SHARED OBJECT
 
---- SCRIPT PARA CACHEAR CON TECLA
-
 function LoadAnimDict(dict)
 	if not HasAnimDictLoaded(dict) then
 		RequestAnimDict(dict)
@@ -37,18 +35,17 @@ Citizen.CreateThread(function()
                     LoadAnimDict("mini@repair")
                     if closestPlayerHasHandsUp or IsEntityDead(closestPlayer) then
                         openNearbyInventory(closestPlayer)
-                        ExecuteCommand('me lo cachea')
+                        ExecuteCommand('me lo cachea') -- CHANGE THIS IF YOU WANT
                         Citizen.Wait(50)-- DONT TOUCH
-                        ClearPedTasks(PlayerPedId())-- DONT TOUCH
+                        ClearPedTasks(player)-- DONT TOUCH
                         ClearPedSecondaryTask(player)-- DONT TOUCH
                     else
                         ESX.ShowNotification('El jugador no tiene las Manos levantadas')
                     end
-
                     Citizen.Wait(1000) -- DONT TOUCH
                     TaskPlayAnim(PlayerPedId(), "mini@repair", "fixing_a_ped", 1.0, -1.0, -1, 49, 0, false, false, false) -- DONT TOUCH
                     Citizen.Wait(3000) -- DONT TOUCH 
-                    ClearPedTasks(PlayerPedId()) -- DONT TOUCH
+                    ClearPedTasks(player) -- DONT TOUCH
                     ClearPedSecondaryTask(player) -- DONT TOUCH
                     
                 else
@@ -68,10 +65,7 @@ function openNearbyInventory(closestPlayer)
     local closestPlayer, closestDistance = ESX.Game.GetClosestPlayer()
     if closestPlayer ~= -1 and closestDistance <= 2.0 then
         exports.ox_inventory:openInventory('player', GetPlayerServerId(closestPlayer))
-    else
-        ESX.ShowNotification('Debes estar cerca del jugador para cachearlo')
     end
 end
 
-exports('ox_inventory', openNearbyInventory)
 
