@@ -8,7 +8,8 @@ description 'OX THIEF'
 
 shared_script '@es_extended/imports.lua'
 
-client_scripts { 
+client_scripts {
+    "config.lua",
     "client.lua"
 }
 
