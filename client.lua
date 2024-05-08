@@ -28,7 +28,9 @@ RegisterCommand(Config.Command, function()
         local closestPlayerHasHandsUp = IsEntityPlayingAnim(closestPlayerPed, "random@mugging3", "handsup_standing_base", 3)
         LoadAnimDict("mini@repair")
         if closestPlayerHasHandsUp or IsPlayerDead(closestPlayer) then
-            ExecuteCommand('me lo cachea') -- CHANGE THIS IF YOU WANT
+            if Config.CommandChat then
+            ExecuteCommand(Config.CommandText)
+            end
             TaskPlayAnim(PlayerPedId(), "mini@repair", "fixing_a_ped", 1.0, -1.0, -1, 49, 0, false, false, false)
             PlayingAnim = true
             openNearbyInventory(closestPlayer)
@@ -52,5 +54,5 @@ function openNearbyInventory(closestPlayer)
     end
 end
 
-RegisterKeyMapping('robar', 'Robar a un jugador cercano', 'keyboard', 'X') -- CONFIG Command
+RegisterKeyMapping(Config.Command, 'Robar a un jugador cercano', 'keyboard', 'X') -- CONFIG Command
 
