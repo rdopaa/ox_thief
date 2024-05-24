@@ -1,5 +1,5 @@
 # Ox Thief
 This script allows players to steal other players. Integrates with OX Inventory, allowing access to the nearby player's inventory.
 
-• LOW MS
-
+• 0 MS
+• CAN CHANGE NOTIFICATION
