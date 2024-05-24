@@ -1,4 +1,4 @@
-ESX = nil
+ESX = exports['es_extended']:getSharedObject()
 local PlayingAnim = false
 
 if ESX == nil then
