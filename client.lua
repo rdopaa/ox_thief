@@ -23,6 +23,12 @@ end
 RegisterCommand(Config.Command, function()
     local player = PlayerPedId()
     local closestPlayer, closestDistance = ESX.Game.GetClosestPlayer()
+
+    if IsEntityDead(player) then
+        ESX.ShowNotification('No puedes robar estando muerto')
+        return
+    end
+
     if closestPlayer ~= -1 and closestDistance <= 1.5 then
         local closestPlayerPed = GetPlayerPed(closestPlayer)
         local closestPlayerHasHandsUp = IsEntityPlayingAnim(closestPlayerPed, "random@mugging3", "handsup_standing_base", 3)
