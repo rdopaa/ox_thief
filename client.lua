@@ -33,7 +33,7 @@ RegisterCommand(Config.Command, function()
         local closestPlayerPed = GetPlayerPed(closestPlayer)
         local closestPlayerHasHandsUp = IsEntityPlayingAnim(closestPlayerPed, "random@mugging3", "handsup_standing_base", 3)
         LoadAnimDict("mini@repair")
-        if closestPlayerHasHandsUp or IsPlayerDead(closestPlayer) then
+        if (closestPlayerHasHandsUp and (Config.StealMode == "HandsUp" or Config.StealMode == "Both")) or (IsPlayerDead(closestPlayer) and (Config.StealMode == "Dead" or Config.StealMode == "Both")) then
             if Config.CommandChat then
             ExecuteCommand(Config.CommandText)
             end
@@ -61,4 +61,3 @@ function openNearbyInventory(closestPlayer)
 end
 
 RegisterKeyMapping(Config.Command, 'Robar a un jugador cercano', 'keyboard', 'X') -- CONFIG Command
-
