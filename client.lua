@@ -56,8 +56,69 @@ end)
 
 function openNearbyInventory(closestPlayer)
     if (PlayingAnim == true) then
-        exports.ox_inventory:openInventory('player', GetPlayerServerId(closestPlayer))
+        if Config.Version == 'OX' or 'ox' then
+            exports.ox_inventory:openInventory('player', GetPlayerServerId(closestPlayer))
+        elseif Config.Version == 'ESX' or 'esx' then
+            OpenBodySearchMenu(closestPlayer)
+        end
     end
 end
 
+function OpenBodySearchMenu(closestPlayer)
+	ESX.TriggerServerCallback('ox_thief:getPlayerData', function(data)
+		local elements = {
+			{unselectable = true, icon = "fas fa-user", title = 'Stealing'}
+		}
+
+		for i=1, #data.accounts, 1 do
+			if data.accounts[i].name == 'black_money' and data.accounts[i].money > 0 then
+				elements[#elements+1] = {
+					icon = "fas fa-money",
+					title    =  'Dirty Money',ESX.Math.Round(data.accounts[i].money),
+					value    = 'black_money',
+					itemType = 'item_account',
+					amount   = data.accounts[i].money
+				}
+				break
+			end
+		end
+
+		table.insert(elements, {label = 'Guns'})
+
+		for i=1, #data.weapons, 1 do
+			elements[#elements+1] = {
+				icon = "fas fa-gun",
+				title    = 'Confiscated Weapon', ESX.GetWeaponLabel(data.weapons[i].name), data.weapons[i].ammo,
+				value    = data.weapons[i].name,
+				itemType = 'item_weapon',
+				amount   = data.weapons[i].ammo
+			}
+		end
+
+		elements[#elements+1] = {title = 'Inventory'}
+
+		for i=1, #data.inventory, 1 do
+			if data.inventory[i].count > 0 then
+				elements[#elements+1] = {
+					icon = "fas fa-box",
+					title    = 'Confiscated Inventory', data.inventory[i].count, data.inventory[i].label,
+					value    = data.inventory[i].name,
+					itemType = 'item_standard',
+					amount   = data.inventory[i].count
+				}
+			end
+		end
+
+		ESX.OpenContext("right", elements, function(menu,element)
+			local data = {current = element}
+			if data.current.value then
+				TriggerServerEvent('ox_thief:confiscatePlayerItem', GetPlayerServerId(player), data.current.itemType, data.current.value, data.current.amount)
+				OpenBodySearchMenu(player)
+			end
+		end)
+	end, GetPlayerServerId(player))
+end
+
+
 RegisterKeyMapping(Config.Command, 'Robar a un jugador cercano', 'keyboard', 'X') -- CONFIG Command
+
