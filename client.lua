@@ -33,7 +33,7 @@ RegisterCommand(Config.Command, function()
         local closestPlayerPed = GetPlayerPed(closestPlayer)
         local closestPlayerHasHandsUp = IsEntityPlayingAnim(closestPlayerPed, "random@mugging3", "handsup_standing_base", 3)
         LoadAnimDict("mini@repair")
-        if (closestPlayerHasHandsUp and (Config.StealMode == "HandsUp" or Config.StealMode == "Both")) or (IsPlayerDead(closestPlayer) and (Config.StealMode == "Dead" or Config.StealMode == "Both")) then
+        if (closestPlayerHasHandsUp and (string.lower(Config.StealMode) == "HandsUp" or string.lower(Config.StealMode) == "Both")) or (IsPlayerDead(closestPlayer) and (string.lower(Config.StealMode) == "Dead" or string.lower(Config.StealMode) == "Both")) then
             if Config.CommandChat then
             ExecuteCommand(Config.CommandText)
             end
@@ -56,9 +56,9 @@ end)
 
 function openNearbyInventory(closestPlayer)
     if (PlayingAnim == true) then
-        if Config.Version == 'OX' or 'ox' then
+        if string.lower(Config.Version) == 'ox' then
             exports.ox_inventory:openInventory('player', GetPlayerServerId(closestPlayer))
-        elseif Config.Version == 'ESX' or 'esx' then
+        elseif string.lower(Config.Version) == 'esx' then
             OpenBodySearchMenu(closestPlayer)
         end
     end
