@@ -1,18 +1,19 @@
 if Config.Version == 'ESX' or Config.Version == 'OX' then
 	ESX = exports['es_extended']:getSharedObject()
+    
+    if ESX == nil then
+        Citizen.CreateThread(function()
+            while ESX == nil do
+                ESX = exports['es_extended']:getSharedObject()
+                Citizen.Wait(0)
+            end
+        end)
+    end
 elseif Config.Version == 'QB' then
 	exports['qb-core']:GetCoreObject()
 end
-local PlayingAnim = false
 
-if ESX == nil then
-    Citizen.CreateThread(function()
-        while ESX == nil do
-            ESX = exports['es_extended']:getSharedObject()
-            Citizen.Wait(0)
-        end
-    end)
-end
+local PlayingAnim = false
 
 function LoadAnimDict(dict)
     if not HasAnimDictLoaded(dict) then
