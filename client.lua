@@ -22,10 +22,18 @@ end
 
 RegisterCommand(Config.Command, function()
     local player = PlayerPedId()
-    local closestPlayer, closestDistance = ESX.Game.GetClosestPlayer()
+    if Config.Version == 'ESX' or Config.Version == 'OX' then
+        local closestPlayer, closestDistance = ESX.Game.GetClosestPlayer()
+    elseif Config.Version == 'QB' then
+        local closestPlayer, closestDistance = QBCore.Functions.GetClosestPlayer()
+    end 
 
     if IsEntityDead(player) then
-        ESX.ShowNotification('No puedes robar estando muerto')
+        if Config.Version == 'ESX' or Config.Version == 'OX' then
+            ESX.ShowNotification(Config.GetTranslation('cannot_steal_dead'))
+        elseif Config.Version == 'QB' then
+            QBCore.Functions.Notify(Config.GetTranslation('cannot_steal_dead'))
+        end
         return
     end
 
@@ -33,9 +41,9 @@ RegisterCommand(Config.Command, function()
         local closestPlayerPed = GetPlayerPed(closestPlayer)
         local closestPlayerHasHandsUp = IsEntityPlayingAnim(closestPlayerPed, "random@mugging3", "handsup_standing_base", 3)
         LoadAnimDict("mini@repair")
-        if (closestPlayerHasHandsUp and (string.lower(Config.StealMode) == "HandsUp" or string.lower(Config.StealMode) == "Both")) or (IsPlayerDead(closestPlayer) and (string.lower(Config.StealMode) == "Dead" or string.lower(Config.StealMode) == "Both")) then
+        if (closestPlayerHasHandsUp and (Config.StealMode == "HandsUp" or Config.StealMode == "Both")) or (IsPlayerDead(closestPlayer) and (Config.StealMode == "Dead" or Config.StealMode == "Both")) then
             if Config.CommandChat then
-            ExecuteCommand(Config.CommandText)
+                ExecuteCommand(Config.CommandText)
             end
             TaskPlayAnim(PlayerPedId(), "mini@repair", "fixing_a_ped", 1.0, -1.0, -1, 49, 0, false, false, false)
             PlayingAnim = true
@@ -46,24 +54,40 @@ RegisterCommand(Config.Command, function()
             ClearPedSecondaryTask(player)
         else
             PlayingAnim = false
-            ESX.ShowNotification('El jugador no tiene las manos levantadas')
+            if Config.Version == 'ESX' or Config.Version == 'OX' then
+                ESX.ShowNotification(Config.GetTranslation('player_hands_up'))
+            elseif Config.Version == 'QB' then
+                QBCore.Functions.Notify(Config.GetTranslation('player_hands_up'))
+            end
         end
     else
         PlayingAnim = false
-        ESX.ShowNotification('No hay jugadores cercanos para robar')
+        if Config.Version == 'ESX' or Config.Version == 'OX' then
+            ESX.ShowNotification(Config.GetTranslation('no_player_nearby'))
+        elseif Config.Version == 'QB' then
+            QBCore.Functions.Notify(Config.GetTranslation('no_player_nearby'))
+        end
     end
 end)
 
 function openNearbyInventory(closestPlayer)
     if (PlayingAnim == true) then
-        if string.lower(Config.Version) == 'ox' then
+        if Config.Version == 'OX' or Config.Version == 'ox' then
+            --- OX Version
             exports.ox_inventory:openInventory('player', GetPlayerServerId(closestPlayer))
-        elseif string.lower(Config.Version) == 'esx' then
+        elseif Config.Version == 'ESX' or Config.Version == 'esx' then
+            --- ESX Version
             OpenBodySearchMenu(closestPlayer)
+        elseif Config.Version == 'QB' or Config.Version == 'qb' then
+            --- QB Version
+            local playerId = GetPlayerServerId(closestPlayer)
+            TriggerServerEvent('ox_thief:openPlayerInventory', playerId)
         end
     end
 end
 
+
+--- ESX Version
 function OpenBodySearchMenu(closestPlayer)
 	ESX.TriggerServerCallback('ox_thief:getPlayerData', function(data)
 		local elements = {
@@ -120,5 +144,5 @@ function OpenBodySearchMenu(closestPlayer)
 end
 
 
-RegisterKeyMapping(Config.Command, 'Robar a un jugador cercano', 'keyboard', 'X') -- CONFIG Command
-
+--- Key Mapping
+RegisterKeyMapping(Config.Command, Config.CommandName, 'keyboard', Config.StealKeyMapping) -- CONFIG Command

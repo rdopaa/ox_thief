@@ -1,8 +1,5 @@
-# FX_Thief
-This script enables players to rob nearby players and access their inventory.
-
-• Support ESX, OX and QB-Core (QB-Inventory) 
+# Ox Thief
+This script allows players to steal other players. Integrates with OX Inventory, allowing access to the nearby player's inventory.
 
 • 0 MS
-
-• Fully configurable
+• CAN CHANGE NOTIFICATION
