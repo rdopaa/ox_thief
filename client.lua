@@ -1,4 +1,7 @@
-if Config.Version == 'ESX' or Config.Version == 'OX' then
+local version = string.lower(Config.Version)
+local PlayingAnim = false
+
+if version == 'esx' or version == 'ox' then
 	ESX = exports['es_extended']:getSharedObject()
     
     if ESX == nil then
@@ -9,11 +12,17 @@ if Config.Version == 'ESX' or Config.Version == 'OX' then
             end
         end)
     end
-elseif Config.Version == 'QB' then
-	exports['qb-core']:GetCoreObject()
+elseif version == 'qb' then
+    QBCore = exports['qb-core']:GetCoreObject()
+    if QBCore == nil then
+        Citizen.CreateThread(function()
+            while QBCore == nil do
+                QBCore = exports['qb-core']:GetCoreObject()
+                Citizen.Wait(0)
+            end
+        end)
+    end
 end
-
-local PlayingAnim = false
 
 function LoadAnimDict(dict)
     if not HasAnimDictLoaded(dict) then
@@ -27,16 +36,17 @@ end
 
 RegisterCommand(Config.Command, function()
     local player = PlayerPedId()
-    if Config.Version == 'ESX' or Config.Version == 'OX' then
-        local closestPlayer, closestDistance = ESX.Game.GetClosestPlayer()
-    elseif Config.Version == 'QB' then
-        local closestPlayer, closestDistance = QBCore.Functions.GetClosestPlayer()
-    end 
+    local closestPlayer, closestDistance
+    if version == 'esx' or version == 'ox' then
+        closestPlayer, closestDistance = ESX.Game.GetClosestPlayer()
+    elseif version == 'qb' then
+        closestPlayer, closestDistance = QBCore.Functions.GetClosestPlayer()
+    end
 
     if IsEntityDead(player) then
-        if Config.Version == 'ESX' or Config.Version == 'OX' then
+        if version == 'esx' or version == 'ox' then
             ESX.ShowNotification(Config.GetTranslation('cannot_steal_dead'))
-        elseif Config.Version == 'QB' then
+        elseif version == 'qb' then
             QBCore.Functions.Notify(Config.GetTranslation('cannot_steal_dead'))
         end
         return
@@ -59,17 +69,17 @@ RegisterCommand(Config.Command, function()
             ClearPedSecondaryTask(player)
         else
             PlayingAnim = false
-            if Config.Version == 'ESX' or Config.Version == 'OX' then
+            if version == 'esx' or version == 'ox' then
                 ESX.ShowNotification(Config.GetTranslation('player_hands_up'))
-            elseif Config.Version == 'QB' then
+            elseif version == 'qb' then
                 QBCore.Functions.Notify(Config.GetTranslation('player_hands_up'))
             end
         end
     else
         PlayingAnim = false
-        if Config.Version == 'ESX' or Config.Version == 'OX' then
+        if version == 'esx' or version == 'ox' then
             ESX.ShowNotification(Config.GetTranslation('no_player_nearby'))
-        elseif Config.Version == 'QB' then
+        elseif version == 'qb' then
             QBCore.Functions.Notify(Config.GetTranslation('no_player_nearby'))
         end
     end
@@ -77,13 +87,13 @@ end)
 
 function openNearbyInventory(closestPlayer)
     if (PlayingAnim == true) then
-        if Config.Version == 'OX' or Config.Version == 'ox' then
+        if version == 'ox' or version == 'ox' then
             --- OX Version
             exports.ox_inventory:openInventory('player', GetPlayerServerId(closestPlayer))
-        elseif Config.Version == 'ESX' or Config.Version == 'esx' then
+        elseif version == 'esx' or version == 'esx' then
             --- ESX Version
             OpenBodySearchMenu(closestPlayer)
-        elseif Config.Version == 'QB' or Config.Version == 'qb' then
+        elseif version == 'qb' or version == 'qb' then
             --- QB Version
             local playerId = GetPlayerServerId(closestPlayer)
             TriggerServerEvent('ox_thief:openPlayerInventory', playerId)
@@ -151,3 +161,4 @@ end
 
 --- Key Mapping
 RegisterKeyMapping(Config.Command, Config.CommandName, 'keyboard', Config.StealKeyMapping) -- CONFIG Command
+
