@@ -1,4 +1,8 @@
-ESX = exports['es_extended']:getSharedObject()
+if Config.Version == 'ESX' or Config.Version == 'OX' then
+	ESX = exports['es_extended']:getSharedObject()
+elseif Config.Version == 'QB' then
+	exports['qb-core']:GetCoreObject()
+end
 local PlayingAnim = false
 
 if ESX == nil then
