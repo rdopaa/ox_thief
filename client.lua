@@ -83,7 +83,7 @@ RegisterCommand(Config.Command, function()
             QBCore.Functions.Notify(Config.GetTranslation('no_player_nearby'))
         end
     end
-end)
+end, false)
 
 function openNearbyInventory(closestPlayer)
     if (PlayingAnim == true) then
