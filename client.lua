@@ -1,6 +1,6 @@
 local version = string.lower(Config.Version)
 local PlayingAnim = false
-
+local inventoryversion = string.lower(Config.Inventory)
 if version == 'esx' then
     ESX = exports['es_extended']:getSharedObject()
 
@@ -36,6 +36,17 @@ end
 
 RegisterCommand(Config.Command, function()
     local player = PlayerPedId()
+    local weaponHash = GetCurrentPedWeapon(player, true)
+
+    if weaponHash == GetHashKey('WEAPON_UNARMED') then
+        if version == 'esx' then
+            ESX.ShowNotification("Necesitas tener un arma equipada para robar.")
+        elseif version == 'qb' then
+            QBCore.Functions.Notify("Necesitas tener un arma equipada para robar.", "error")
+        end
+        return
+    end
+
     local closestPlayer, closestDistance
     if version == 'esx' then
         closestPlayer, closestDistance = ESX.Game.GetClosestPlayer()
@@ -51,16 +62,23 @@ RegisterCommand(Config.Command, function()
         end
         return
     end
-    if closestPlayer ~= -1 and closestDistance <= Config.MaxDistance then
-        return
-    end
 
     if closestPlayer ~= -1 and closestDistance <= 1.5 then
         local closestPlayerPed = GetPlayerPed(closestPlayer)
-        local closestPlayerHasHandsUp = IsEntityPlayingAnim(closestPlayerPed, "random@mugging3", "handsup_standing_base",
-            3)
+
+        --- INICIO DE LA MODIFICACIÓN ---
+        -- Verifica la primera animación de manos arriba (la original)
+        local hasHandsUpAnim1 = IsEntityPlayingAnim(closestPlayerPed, "random@mugging3", "handsup_standing_base", 3)
+        -- Verifica la segunda animación de manos arriba (la nueva)
+        -- NOTA: Si usas un diccionario de animación diferente a "misscommon@response@hands_up", cámbialo aquí.
+        local hasHandsUpAnim2 = IsEntityPlayingAnim(closestPlayerPed, "misscommon@response@hands_up", "handsup_enter", 3)
+        local closestPlayerHasHandsUp = hasHandsUpAnim1 or hasHandsUpAnim2
+        --- FIN DE LA MODIFICACIÓN ---
+
+        local isTargetDead = IsEntityDead(closestPlayerPed)
+
         LoadAnimDict("mini@repair")
-        if (closestPlayerHasHandsUp and (Config.StealMode == "HandsUp" or Config.StealMode == "Both")) or (IsPlayerDead(closestPlayer) and (Config.StealMode == "Dead" or Config.StealMode == "Both")) then
+        if (closestPlayerHasHandsUp and (Config.StealMode == "HandsUp" or Config.StealMode == "Both")) or (isTargetDead and (Config.StealMode == "Dead" or Config.StealMode == "Both")) then
             if Config.CommandChat then
                 ExecuteCommand(Config.CommandText)
             end
@@ -91,13 +109,15 @@ end, false)
 
 function openNearbyInventory(closestPlayer)
     if (PlayingAnim == true) then
-        if version == 'ox' then
+        if inventoryversion == 'ox' then
             --- OX Version
+            --- exports.ox_inventory:openInventory(invType, data)
+
             exports.ox_inventory:openInventory('player', GetPlayerServerId(closestPlayer))
-        elseif version == 'esx' then
+        elseif inventoryversion == 'esx' then
             --- ESX Version
             OpenBodySearchMenu(closestPlayer)
-        elseif version == 'qb' then
+        elseif inventoryversion == 'qb' then
             --- QB Version
             local playerId = GetPlayerServerId(closestPlayer)
             TriggerServerEvent('ox_thief:openPlayerInventory', playerId)
@@ -107,64 +127,59 @@ end
 
 --- ESX Version
 function OpenBodySearchMenu(closestPlayer)
+    local targetPlayerId = GetPlayerServerId(closestPlayer)
     ESX.TriggerServerCallback('ox_thief:getPlayerData', function(data)
         local elements = {
-            { unselectable = true, icon = "fas fa-user", title = 'Stealing' }
+            { unselectable = true, icon = "fas fa-user", title = 'Robando' }
         }
 
         for i = 1, #data.accounts, 1 do
             if data.accounts[i].name == 'black_money' and data.accounts[i].money > 0 then
-                elements[#elements + 1] = {
-                    icon  = "fas fa-money",
-                    title = 'Dirty Money',
-                    ESX.Math.Round(data.accounts[i].money),
-                    value    = 'black_money',
+                table.insert(elements, {
+                    icon = "fas fa-money",
+                    title = 'Dinero Sucio: ' .. ESX.Math.Round(data.accounts[i].money),
+                    value = 'black_money',
                     itemType = 'item_account',
-                    amount   = data.accounts[i].money
-                }
-                break
+                    amount = data.accounts[i].money
+                })
             end
         end
 
-        table.insert(elements, { label = 'Guns' })
-
-        for i = 1, #data.weapons, 1 do
-            elements[#elements + 1] = {
-                icon  = "fas fa-gun",
-                title = 'Confiscated Weapon',
-                ESX.GetWeaponLabel(data.weapons[i].name),
-                data.weapons[i].ammo,
-                value    = data.weapons[i].name,
-                itemType = 'item_weapon',
-                amount   = data.weapons[i].ammo
-            }
+        if #data.weapons > 0 then
+            table.insert(elements, { label = 'Armas' })
+            for i = 1, #data.weapons, 1 do
+                table.insert(elements, {
+                    icon = "fas fa-gun",
+                    title = ESX.GetWeaponLabel(data.weapons[i].name) .. ' (' .. data.weapons[i].ammo .. ')',
+                    value = data.weapons[i].name,
+                    itemType = 'item_weapon',
+                    amount = data.weapons[i].ammo
+                })
+            end
         end
 
-        elements[#elements + 1] = { title = 'Inventory' }
-
-        for i = 1, #data.inventory, 1 do
-            if data.inventory[i].count > 0 then
-                elements[#elements + 1] = {
-                    icon  = "fas fa-box",
-                    title = 'Confiscated Inventory',
-                    data.inventory[i].count,
-                    data.inventory[i].label,
-                    value    = data.inventory[i].name,
-                    itemType = 'item_standard',
-                    amount   = data.inventory[i].count
-                }
+        if #data.inventory > 0 then
+            table.insert(elements, { title = 'Inventario' })
+            for i = 1, #data.inventory, 1 do
+                if data.inventory[i].count > 0 then
+                    table.insert(elements, {
+                        icon = "fas fa-box",
+                        title = data.inventory[i].label .. ' (x' .. data.inventory[i].count .. ')',
+                        value = data.inventory[i].name,
+                        itemType = 'item_standard',
+                        amount = data.inventory[i].count
+                    })
+                end
             end
         end
 
         ESX.OpenContext("right", elements, function(menu, element)
-            local data = { current = element }
-            if data.current.value then
-                TriggerServerEvent('ox_thief:confiscatePlayerItem', GetPlayerServerId(player), data.current.itemType,
-                    data.current.value, data.current.amount)
-                OpenBodySearchMenu(player)
+            if element.value then
+                TriggerServerEvent('ox_thief:confiscatePlayerItem', targetPlayerId, element.itemType, element.value, element.amount)
+                OpenBodySearchMenu(closestPlayer)
             end
         end)
-    end, GetPlayerServerId(player))
+    end, targetPlayerId)
 end
 
 --- Key Mapping
