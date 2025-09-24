@@ -1,8 +1,9 @@
 fx_version 'adamant'
 game 'gta5'
 author 'fxDopa#1648'
-description 'OX THIEF'
-
+description 'CREATED FOR ESX, QB OR OX.'
+version '2.0'
+lua54 'yes'
 server_scripts {
     'config.lua',
     'server.lua'
