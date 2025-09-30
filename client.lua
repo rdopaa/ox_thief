@@ -1,6 +1,7 @@
 local version = string.lower(Config.Version)
 local PlayingAnim = false
 local inventoryversion = string.lower(Config.Inventory)
+
 if version == 'esx' then
     ESX = exports['es_extended']:getSharedObject()
 
@@ -29,7 +30,7 @@ function LoadAnimDict(dict)
         RequestAnimDict(dict)
 
         while not HasAnimDictLoaded(dict) do
-            Citizen.Wait(1)
+            Citizen.Wait(50)
         end
     end
 end
@@ -65,15 +66,9 @@ RegisterCommand(Config.Command, function()
 
     if closestPlayer ~= -1 and closestDistance <= 1.5 then
         local closestPlayerPed = GetPlayerPed(closestPlayer)
-
-        --- INICIO DE LA MODIFICACIÓN ---
-        -- Verifica la primera animación de manos arriba (la original)
         local hasHandsUpAnim1 = IsEntityPlayingAnim(closestPlayerPed, "random@mugging3", "handsup_standing_base", 3)
-        -- Verifica la segunda animación de manos arriba (la nueva)
-        -- NOTA: Si usas un diccionario de animación diferente a "misscommon@response@hands_up", cámbialo aquí.
         local hasHandsUpAnim2 = IsEntityPlayingAnim(closestPlayerPed, "misscommon@response@hands_up", "handsup_enter", 3)
         local closestPlayerHasHandsUp = hasHandsUpAnim1 or hasHandsUpAnim2
-        --- FIN DE LA MODIFICACIÓN ---
 
         local isTargetDead = IsEntityDead(closestPlayerPed)
 
@@ -110,15 +105,10 @@ end, false)
 function openNearbyInventory(closestPlayer)
     if (PlayingAnim == true) then
         if inventoryversion == 'ox' then
-            --- OX Version
-            --- exports.ox_inventory:openInventory(invType, data)
-
             exports.ox_inventory:openInventory('player', GetPlayerServerId(closestPlayer))
         elseif inventoryversion == 'esx' then
-            --- ESX Version
             OpenBodySearchMenu(closestPlayer)
         elseif inventoryversion == 'qb' then
-            --- QB Version
             local playerId = GetPlayerServerId(closestPlayer)
             TriggerServerEvent('ox_thief:openPlayerInventory', playerId)
         end
