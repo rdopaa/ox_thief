@@ -3,7 +3,7 @@ This script allows players to steal from other players. Integrates with OX Inven
 ===================
 
 Updated 30/9/2025
-
+In coming big update..
 ===================
 - Added Discord logs with Webhook
 - Added more compatible languages (from config):
