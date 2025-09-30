@@ -1,8 +1,9 @@
 ESX = exports['es_extended']:getSharedObject()
-if Config.DiscordWebhooks.Steal == "YOUR_GENERAL_WEBHOOK_URL" then
-	print("Please set your webhook URL in config.lua from FX THIEF")
+if not Config.DiscordWebhooks.Steal or Config.DiscordWebhooks.Steal == "" or Config.DiscordWebhooks.Steal == "YOUR_GENERAL_WEBHOOK_URL" then
+    print("^1[ERROR] Please set your webhook URL in config.lua (FX THIEF)^0")
 end
 
+-- Log Webhook
 -- Log Webhook
 local function SendDiscordLog(webhookUrl, embedMessage, color, title)
 	local data = {
@@ -15,9 +16,16 @@ local function SendDiscordLog(webhookUrl, embedMessage, color, title)
 		}
 	}
 
-	PerformHttpRequest(webhookUrl, function(err, text, headers) end, 'POST', json.encode(data),
+	PerformHttpRequest(webhookUrl, function(err, text, headers) 
+        if err > 0 then
+            print(("[FX WEBHOOK ERROR] Code: %s | Response: %s"):format(err, text))
+        elseif text and text ~= 'ok' and text ~= '' then
+            print(("[FX WEBHOOK ERROR] Discord issue: %s"):format(text))
+        end
+    end, 'POST', json.encode(data),
 		{ ['Content-Type'] = 'application/json' })
 end
+
 
 -- ESX
 RegisterNetEvent('ox_thief:confiscatePlayerItem')
@@ -25,20 +33,20 @@ AddEventHandler('ox_thief:confiscatePlayerItem', function(target, itemType, item
 	local source = source
 	local sourceXPlayer = ESX.GetPlayerFromId(source)
 	local targetXPlayer = ESX.GetPlayerFromId(target)
-	if targetXPlayer == nil or sourceXPlayer == nil or -1 then return end
+	if targetXPlayer == nil or sourceXPlayer == nil then return end
 	if amount == nil or amount == 0 then return end
 
 	if itemType == 'item_standard' then
 		local targetItem = targetXPlayer.getInventoryItem(itemName)
 		local sourceItem = sourceXPlayer.getInventoryItem(itemName)
 
-		if targetItem.count > 0 and targetItem.count <= amount then
-			if sourceXPlayer.canCarryItem(itemName, sourceItem.count) then
+		if targetItem.count > 0 and amount <= targetItem.count then
+			if sourceXPlayer.canCarryItem(itemName, amount) then
 				targetXPlayer.removeInventoryItem(itemName, amount)
 				sourceXPlayer.addInventoryItem(itemName, amount)
 				SendDiscordLog(Config.DiscordWebhooks.Steal,
 					string.format("%s (ID: %s) stole %d %s from %s (ID: %s)", sourceXPlayer.getName(),
-						sourceXPlayer, amount, itemName, targetXPlayer.getName(), targetXPlayer), 65280,
+						source, amount, itemName, targetXPlayer.getName(), target), 65280,
 					"Player Steal")                                                                                                                                                                                                                  -- Green color
 			end
 		end
@@ -48,16 +56,16 @@ AddEventHandler('ox_thief:confiscatePlayerItem', function(target, itemType, item
 			targetXPlayer.removeAccountMoney(itemName, amount, "Confiscated")
 			sourceXPlayer.addAccountMoney(itemName, amount, "Confiscated")
 			SendDiscordLog(Config.DiscordWebhooks.Steal,
-				string.format("%s (ID: %s) stole %d %s from %s (ID: %s)", sourceXPlayer.getName(), sourceXPlayer,
-					amount, itemName, targetXPlayer.getName(), targetXPlayer), 65280, "Player Steal")                                                                                                                                       -- Green color
+				string.format("%s (ID: %s) stole %d %s from %s (ID: %s)", sourceXPlayer.getName(), source,
+					amount, itemName, targetXPlayer.getName(), target), 65280, "Player Steal")                                                                                                                                       -- Green color
 		end
 	elseif itemType == 'item_weapon' then
 		if targetXPlayer.hasWeapon(itemName) then
 			targetXPlayer.removeWeapon(itemName)
 			sourceXPlayer.addWeapon(itemName, amount)
 			SendDiscordLog(Config.DiscordWebhooks.Steal,
-				string.format("%s (ID: %s) stole %s from %s (ID: %s)", sourceXPlayer.getName(), sourceXPlayer,
-					itemName, targetXPlayer.getName(), targetXPlayer), 65280, "Player Steal")                                                                                                                                    -- Green color	
+				string.format("%s (ID: %s) stole %s from %s (ID: %s)", sourceXPlayer.getName(), source,
+					itemName, targetXPlayer.getName(), target), 65280, "Player Steal")                                                                                                                                    -- Green color	
 		end
 	end
 end)
@@ -88,4 +96,5 @@ AddEventHandler('ox_thief:openPlayerInventory', function(playerId)
 		string.format("%s (ID: %s) stole from %s (ID: %s)", GetPlayerName(source), source, GetPlayerName(playerId),
 			playerId), 65280, "Player Steal")                                                                                                                                               -- Green color
 end)
+
 
