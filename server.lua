@@ -4,7 +4,6 @@ if not Config.DiscordWebhooks.Steal or Config.DiscordWebhooks.Steal == "" or Con
 end
 
 -- Log Webhook
--- Log Webhook
 local function SendDiscordLog(webhookUrl, embedMessage, color, title)
 	local data = {
 		embeds = {
@@ -15,7 +14,6 @@ local function SendDiscordLog(webhookUrl, embedMessage, color, title)
 			}
 		}
 	}
-
 	PerformHttpRequest(webhookUrl, function(err, text, headers) 
         if err > 0 then
             print(("[FX WEBHOOK ERROR] Code: %s | Response: %s"):format(err, text))
@@ -25,7 +23,6 @@ local function SendDiscordLog(webhookUrl, embedMessage, color, title)
     end, 'POST', json.encode(data),
 		{ ['Content-Type'] = 'application/json' })
 end
-
 
 -- ESX
 RegisterNetEvent('ox_thief:confiscatePlayerItem')
@@ -96,5 +93,3 @@ AddEventHandler('ox_thief:openPlayerInventory', function(playerId)
 		string.format("%s (ID: %s) stole from %s (ID: %s)", GetPlayerName(source), source, GetPlayerName(playerId),
 			playerId), 65280, "Player Steal")                                                                                                                                               -- Green color
 end)
-
-
