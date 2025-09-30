@@ -1,12 +1,9 @@
 # FX Thief | OX-ESX-QB
-This script allows players to steal from other players. Integrates with OX Inventory, allowing access to the nearby player's inventory.
-===================
+Allows players to steal from other players with animation. 
 
-Updated 30/9/2025
-In coming big update..
-===================
+Last Update 30/9/25:
 - Added Discord logs with Webhook
-- Added more compatible languages (from config):
+- Added more languages (from config):
   - English (en)
   - Spanish (es)
   - French (fr)
@@ -14,3 +11,5 @@ In coming big update..
   - Italian (it)
 - Improved and optimized code
 - Increased security
+
+  In coming big update..
